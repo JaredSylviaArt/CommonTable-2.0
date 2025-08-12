@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Listing } from '@/types';
@@ -49,8 +49,44 @@ export default function FavoritesWatchlist() {
     if (!user) return;
 
     try {
-      // Mock favorites data - In real app, this would come from a favorites collection
-      const mockFavorites: FavoriteItem[] = [
+      // Fetch real favorites from database
+      const favoritesRef = collection(db, 'favorites');
+      const favoritesQuery = query(
+        favoritesRef,
+        where('userId', '==', user.uid)
+      );
+      const favoritesSnapshot = await getDocs(favoritesQuery);
+      
+      const favoritesData: FavoriteItem[] = [];
+      
+      // For each favorite, fetch the actual listing data
+      for (const favoriteDoc of favoritesSnapshot.docs) {
+        const favoriteData = favoriteDoc.data();
+        
+        try {
+          const listingDoc = await getDoc(doc(db, 'listings', favoriteData.listingId));
+          if (listingDoc.exists()) {
+            const listingData = {
+              id: listingDoc.id,
+              ...listingDoc.data(),
+              createdAt: listingDoc.data().createdAt?.toDate(),
+            } as Listing;
+            
+            favoritesData.push({
+              ...listingData,
+              dateAdded: favoriteData.dateAdded?.toDate() || new Date(),
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching listing for favorite:', error);
+        }
+      }
+
+      setFavorites(favoritesData);
+      
+      // Mock favorites data for demo purposes if no real favorites exist
+      if (favoritesData.length === 0) {
+        const mockFavorites: FavoriteItem[] = [
         {
           id: 'fav-1',
           title: 'Professional Sound System',
@@ -127,7 +163,39 @@ export default function FavoritesWatchlist() {
         }
       ];
 
-      setFavorites(mockFavorites);
+        setFavorites(mockFavorites);
+      }
+      
+      // Mock wanted items
+      const mockWantedItems: WantedItem[] = [
+        {
+          id: 'want-1',
+          title: 'Projector for Sanctuary',
+          category: 'Equipment & Tech',
+          maxPrice: 300,
+          description: 'Looking for a reliable projector for our sanctuary, 3000+ lumens preferred',
+          createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+          matchCount: 2
+        },
+        {
+          id: 'want-2',
+          title: 'Children\'s Ministry Books',
+          category: 'Books & Resources',
+          description: 'Age-appropriate Bible stories and activity books for kids 5-10',
+          createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+          matchCount: 0
+        },
+        {
+          id: 'want-3',
+          title: 'Folding Tables',
+          category: 'Furniture',
+          maxPrice: 50,
+          description: 'Need 4-6 folding tables for church events and potlucks',
+          createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+          matchCount: 1
+        }
+      ];
+      
       setWantedItems(mockWantedItems);
     } catch (error) {
       console.error('Error fetching favorites and wanted items:', error);
@@ -148,8 +216,28 @@ export default function FavoritesWatchlist() {
     }
   };
 
-  const removeFavorite = (favoriteId: string) => {
-    setFavorites(prev => prev.filter(fav => fav.id !== favoriteId));
+  const removeFavorite = async (listingId: string) => {
+    if (!user) return;
+
+    try {
+      // Find and delete the favorite from database
+      const favoritesRef = collection(db, 'favorites');
+      const q = query(
+        favoritesRef,
+        where('userId', '==', user.uid),
+        where('listingId', '==', listingId)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        await deleteDoc(doc(db, 'favorites', querySnapshot.docs[0].id));
+      }
+
+      // Remove from local state
+      setFavorites(prev => prev.filter(fav => fav.id !== listingId));
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
   };
 
   const removeWantedItem = (wantedId: string) => {

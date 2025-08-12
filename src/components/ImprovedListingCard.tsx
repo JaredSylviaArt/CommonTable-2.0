@@ -9,7 +9,7 @@ import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
 
 interface ImprovedListingCardProps {
   listing: Listing;
@@ -21,6 +21,7 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
   const [isMessaging, setIsMessaging] = useState(false);
   const [listingOwner, setListingOwner] = useState<User | null>(null);
   const [loadingOwner, setLoadingOwner] = useState(false);
+  const [favoriteId, setFavoriteId] = useState<string | null>(null);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -29,6 +30,12 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
       fetchListingOwner();
     }
   }, [listing.userId, showUser]);
+
+  useEffect(() => {
+    if (user) {
+      checkIfFavorited();
+    }
+  }, [user, listing.id]);
 
   const fetchListingOwner = async () => {
     if (loadingOwner) return;
@@ -43,6 +50,58 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
       console.error('Error fetching listing owner:', error);
     } finally {
       setLoadingOwner(false);
+    }
+  };
+
+  const checkIfFavorited = async () => {
+    if (!user) return;
+
+    try {
+      const favoritesRef = collection(db, 'favorites');
+      const q = query(
+        favoritesRef,
+        where('userId', '==', user.uid),
+        where('listingId', '==', listing.id)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        setIsLiked(true);
+        setFavoriteId(querySnapshot.docs[0].id);
+      } else {
+        setIsLiked(false);
+        setFavoriteId(null);
+      }
+    } catch (error) {
+      console.error('Error checking if favorited:', error);
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!user) return;
+
+    try {
+      if (isLiked && favoriteId) {
+        // Remove from favorites
+        await deleteDoc(doc(db, 'favorites', favoriteId));
+        setIsLiked(false);
+        setFavoriteId(null);
+      } else {
+        // Add to favorites
+        const favoriteData = {
+          userId: user.uid,
+          listingId: listing.id,
+          listingTitle: listing.title,
+          listingType: listing.type,
+          listingCategory: listing.category,
+          dateAdded: new Date(),
+        };
+        const docRef = await addDoc(collection(db, 'favorites'), favoriteData);
+        setIsLiked(true);
+        setFavoriteId(docRef.id);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
     }
   };
 
@@ -148,7 +207,8 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
             <button
               onClick={(e) => {
                 e.preventDefault();
-                setIsLiked(!isLiked);
+                e.stopPropagation();
+                toggleFavorite();
               }}
               className="w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors"
             >
