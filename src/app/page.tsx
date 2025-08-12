@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { collection, query, orderBy, getDocs, where, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Listing, ListingType, ListingCategory } from '@/types';
@@ -18,6 +19,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [locationLoading, setLocationLoading] = useState(false);
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState({
     type: '' as ListingType | '',
     category: '' as ListingCategory | '',
@@ -37,6 +39,17 @@ export default function Home() {
   useEffect(() => {
     applyFilters();
   }, [filters, listings]);
+
+  // Handle search from URL params
+  useEffect(() => {
+    const searchQuery = searchParams?.get('search');
+    if (searchQuery) {
+      setFilters(prev => ({
+        ...prev,
+        searchTerm: searchQuery
+      }));
+    }
+  }, [searchParams]);
 
   const fetchListings = async () => {
     try {

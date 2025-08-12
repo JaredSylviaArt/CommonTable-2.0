@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlassIcon, BellIcon, UserCircleIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface TopBarProps {
@@ -13,6 +14,7 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const { user, logout } = useAuth();
+  const router = useRouter();
   const notificationsRef = useRef<HTMLDivElement>(null);
 
   // Close notifications when clicking outside
@@ -29,6 +31,14 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
     }
   }, [showNotifications]);
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      // Navigate to home page with search term
+      router.push(`/?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
   return (
     <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
       <div className="flex items-center justify-between">
@@ -42,16 +52,17 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
 
         {/* Search Bar */}
         <div className="flex-1 max-w-lg">
-          <div className="relative">
+          <form onSubmit={handleSearch} className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search for anything..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent text-dark-force"
+              style={{ color: '#111827 !important' }}
             />
-          </div>
+          </form>
         </div>
 
         {/* Right Side */}
