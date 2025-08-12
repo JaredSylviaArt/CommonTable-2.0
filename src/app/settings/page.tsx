@@ -179,8 +179,7 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-        </div>
-      </ResponsiveLayout>
+        </ResponsiveLayout>
     </ProtectedRoute>
   );
 }
