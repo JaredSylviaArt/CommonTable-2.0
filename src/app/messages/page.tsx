@@ -6,8 +6,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Conversation } from '@/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Sidebar from '@/components/Sidebar';
-import TopBar from '@/components/TopBar';
+import ResponsiveLayout from '@/components/ResponsiveLayout';
 import ConversationList from '@/components/ConversationList';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
@@ -50,41 +49,29 @@ export default function MessagesPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen bg-gray-50">
-        {/* Sidebar */}
-        <Sidebar />
-        
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          {/* Top Bar */}
-          <TopBar />
-          
-          {/* Content Area */}
-          <div className="flex-1 p-6">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages</h1>
-              <p className="text-gray-600">Your conversations about listings</p>
-            </div>
-
-            {/* Messages Content */}
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#665CF0]"></div>
-              </div>
-            ) : conversations.length === 0 ? (
-              <div className="text-center py-12">
-                <ChatBubbleLeftRightIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg mb-2">No conversations yet</p>
-                <p className="text-gray-400">Messages will appear here when people contact you about your listings.</p>
-              </div>
-            ) : (
-              <div className="max-w-4xl">
-                <ConversationList conversations={conversations} />
-              </div>
-            )}
-          </div>
+      <ResponsiveLayout>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages</h1>
+          <p className="text-gray-600">Your conversations about listings</p>
         </div>
-      </div>
+
+        {/* Messages Content */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#665CF0]"></div>
+          </div>
+        ) : conversations.length === 0 ? (
+          <div className="text-center py-12">
+            <ChatBubbleLeftRightIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500 text-lg mb-2">No conversations yet</p>
+            <p className="text-gray-400">Messages will appear here when people contact you about your listings.</p>
+          </div>
+        ) : (
+          <div className="max-w-4xl">
+            <ConversationList conversations={conversations} />
+          </div>
+        )}
+      </ResponsiveLayout>
     </ProtectedRoute>
   );
 }

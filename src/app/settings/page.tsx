@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Sidebar from '@/components/Sidebar';
-import TopBar from '@/components/TopBar';
+import ResponsiveLayout from '@/components/ResponsiveLayout';
 import { UserCircleIcon, BellIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 export default function SettingsPage() {
@@ -24,23 +23,13 @@ export default function SettingsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen bg-gray-50">
-        {/* Sidebar */}
-        <Sidebar />
-        
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          {/* Top Bar */}
-          <TopBar />
-          
-          {/* Content Area */}
-          <div className="flex-1 p-6">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-              <p className="text-gray-600">Manage your account and preferences</p>
-            </div>
+      <ResponsiveLayout>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
+          <p className="text-gray-600">Manage your account and preferences</p>
+        </div>
 
-            <div className="max-w-4xl space-y-6">
+        <div className="max-w-4xl space-y-6">
               {/* Profile Section */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <div className="flex items-center space-x-3 mb-6">
@@ -190,9 +179,8 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-          </div>
         </div>
-      </div>
+      </ResponsiveLayout>
     </ProtectedRoute>
   );
 }
