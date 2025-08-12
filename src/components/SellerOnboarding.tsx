@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
+import { useSearchParams } from 'next/navigation';
 import { CreditCardIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 interface SellerOnboardingProps {
@@ -12,11 +13,39 @@ interface SellerOnboardingProps {
 export default function SellerOnboarding({ onComplete }: SellerOnboardingProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const searchParams = useSearchParams();
+
+  // Check if user just returned from Stripe Connect onboarding
+  useEffect(() => {
+    const connected = searchParams?.get('connected');
+    if (connected === 'true') {
+      // Refresh user data after Stripe Connect completion
+      refreshUser();
+    }
+  }, [searchParams, refreshUser]);
 
   const canSell = user?.stripeChargesEnabled && user?.stripeDetailsSubmitted;
   const hasStripeAccount = user?.stripeAccountId;
   const needsOnboarding = !user?.stripeDetailsSubmitted;
+
+  const handleCheckStatus = async () => {
+    if (!user?.stripeAccountId) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/stripe/connect?accountId=${user.stripeAccountId}`);
+      if (response.ok) {
+        const accountData = await response.json();
+        // The API should trigger a webhook, but let's also refresh user data
+        await refreshUser();
+      }
+    } catch (error) {
+      console.error('Error checking account status:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSetupPayments = async () => {
     if (!user || !auth.currentUser) return;
@@ -62,6 +91,52 @@ export default function SellerOnboarding({ onComplete }: SellerOnboardingProps) 
             <p className="text-green-700">
               Your payment account is set up and ready to receive payments.
             </p>
+            <p className="text-sm text-green-600 mt-2">
+              Account ID: {user?.stripeAccountId?.slice(-8)}...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If user has Stripe account but not fully verified
+  if (hasStripeAccount && needsOnboarding) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+        <div className="flex items-start">
+          <ExclamationTriangleIcon className="h-8 w-8 text-yellow-500 mr-3 mt-1" />
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-yellow-900 mb-2">
+              Complete Your Payment Setup
+            </h3>
+            <p className="text-yellow-800 mb-4">
+              Your Stripe account has been created but needs to be completed before you can start selling.
+            </p>
+            
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleSetupPayments}
+                disabled={loading}
+                className="bg-[#665CF0] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5A52E8] focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Loading...' : 'Complete Setup'}
+              </button>
+              
+              <button
+                onClick={handleCheckStatus}
+                disabled={loading}
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Checking...' : 'Check Status'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
