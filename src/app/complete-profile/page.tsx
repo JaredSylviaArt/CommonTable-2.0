@@ -51,7 +51,7 @@ export default function CompleteProfilePage() {
       await refreshUser();
       
       router.push('/dashboard');
-    } catch (error) {
+    } catch {
       setError('Failed to complete profile. Please try again.');
     }
     setLoading(false);
@@ -120,7 +120,7 @@ export default function CompleteProfilePage() {
               <option value="Pastor">Pastor</option>
               <option value="Associate Pastor">Associate Pastor</option>
               <option value="Youth Pastor">Youth Pastor</option>
-              <option value="Children's Pastor">Children's Pastor</option>
+              <option value="Children's Pastor">Children&apos;s Pastor</option>
               <option value="Worship Leader">Worship Leader</option>
               <option value="Admin Staff">Admin Staff</option>
               <option value="Ministry Leader">Ministry Leader</option>

@@ -55,21 +55,21 @@ export default function SeedPage() {
 
           {isComplete && (
             <div className="mt-4">
-              <a
+              <Link
                 href="/"
                 className="block text-center text-[#665CF0] hover:text-[#5A52E8] font-medium"
               >
                 ← Back to Home
-              </a>
+              </Link>
             </div>
           )}
 
           <div className="mt-6 text-sm text-gray-500">
             <p className="font-semibold mb-2">This will add:</p>
             <ul className="space-y-1">
-              <li>• 4 "Give Away" listings (desks, chairs, games, supplies)</li>
-              <li>• 4 "Sell" listings (projector, sound system, curriculum, pews)</li>
-              <li>• 4 "Share" listings (graphics, templates, studies)</li>
+              <li>• 4 &quot;Give Away&quot; listings (desks, chairs, games, supplies)</li>
+              <li>• 4 &quot;Sell&quot; listings (projector, sound system, curriculum, pews)</li>
+              <li>• 4 &quot;Share&quot; listings (graphics, templates, studies)</li>
             </ul>
           </div>
         </div>

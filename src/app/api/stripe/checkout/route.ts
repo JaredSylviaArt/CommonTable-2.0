@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Calculate amounts (convert to cents)
     const totalAmount = Math.round(listing.price * 100);
     const platformFee = calculatePlatformFee(totalAmount);
-    const sellerAmount = totalAmount - platformFee;
+    // const sellerAmount = totalAmount - platformFee; // Future use
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
