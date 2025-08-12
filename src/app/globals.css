@@ -44,6 +44,34 @@ body {
   color: #6b7280 !important; /* gray-500 */
 }
 
+/* Ensure all input text is dark and readable */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="number"],
+textarea,
+select {
+  color: #111827 !important; /* gray-900 - very dark for high contrast */
+}
+
+/* Dark mode input text */
+@media (prefers-color-scheme: dark) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  textarea,
+  select {
+    color: #f9fafb !important; /* gray-50 - light text for dark mode */
+  }
+}
+
 /* Line clamp utilities */
 .line-clamp-1 {
   overflow: hidden;
