@@ -137,7 +137,7 @@ export default function Home() {
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
             <h1 className="text-2xl font-bold text-gray-900">Browse Resources</h1>
-            <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent">
+            <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent text-dark-force">
               <option>Newest First</option>
               <option>Oldest First</option>
               <option>Price: Low to High</option>

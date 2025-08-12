@@ -96,6 +96,19 @@ textarea.rounded-lg {
   }
 }
 
+/* Force dark text utility class */
+.text-dark-force {
+  color: #111827 !important;
+}
+
+.text-dark-force::placeholder {
+  color: #6b7280 !important;
+}
+
+.text-dark-force:focus {
+  color: #111827 !important;
+}
+
 /* Line clamp utilities */
 .line-clamp-1 {
   overflow: hidden;

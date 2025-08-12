@@ -89,7 +89,7 @@ export default function ImprovedFilterPanel({
             value={filters.searchTerm}
             onChange={(e) => updateFilter('searchTerm', e.target.value)}
             placeholder="Search listings..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent text-sm text-dark-force"
           />
         </div>
 
