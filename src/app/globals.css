@@ -96,7 +96,7 @@ textarea.rounded-lg {
   }
 }
 
-/* Force dark text utility class */
+/* Force dark text utility class - nuclear option */
 .text-dark-force {
   color: #111827 !important;
 }
@@ -106,6 +106,21 @@ textarea.rounded-lg {
 }
 
 .text-dark-force:focus {
+  color: #111827 !important;
+}
+
+/* Nuclear option - override everything */
+* input,
+* input[type="text"],
+* input[type="search"],
+* textarea {
+  color: #111827 !important;
+}
+
+/* Even more specific - target the exact search input */
+input.w-full.px-3.py-2.border.border-gray-300.rounded-lg,
+input[placeholder*="Search"],
+input[placeholder*="search"] {
   color: #111827 !important;
 }
 
