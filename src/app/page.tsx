@@ -1,103 +1,208 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { collection, query, orderBy, getDocs, where, limit } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Listing, ListingType, ListingCategory } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { filterListingsByProximity } from '@/lib/locationService';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import ResponsiveLayout from '@/components/ResponsiveLayout';
+import ImprovedListingCard from '@/components/ImprovedListingCard';
+import ImprovedFilterPanel from '@/components/ImprovedFilterPanel';
+import LocationDetector from '@/components/LocationDetector';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const { user } = useAuth();
+  const [filters, setFilters] = useState({
+    type: '' as ListingType | '',
+    category: '' as ListingCategory | '',
+    zipRadius: 25,
+    searchTerm: '',
+    priceMin: 0,
+    priceMax: 1000,
+    location: '',
+    condition: '',
+    datePosted: '',
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [filters, listings]);
+
+  const fetchListings = async () => {
+    try {
+      const listingsRef = collection(db, 'listings');
+      const q = query(listingsRef, orderBy('createdAt', 'desc'), limit(50));
+      const querySnapshot = await getDocs(q);
+      
+      const listingsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+      })) as Listing[];
+      
+      setListings(listingsData);
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+    }
+    setLoading(false);
+  };
+
+  const applyFilters = async () => {
+    let filtered = [...listings];
+
+    // Filter by type
+    if (filters.type) {
+      filtered = filtered.filter(listing => listing.type === filters.type);
+    }
+
+    // Filter by category
+    if (filters.category) {
+      filtered = filtered.filter(listing => listing.category === filters.category);
+    }
+
+    // Filter by search term
+    if (filters.searchTerm) {
+      const searchLower = filters.searchTerm.toLowerCase();
+      filtered = filtered.filter(listing =>
+        listing.title.toLowerCase().includes(searchLower) ||
+        listing.description.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Filter by price range
+    if (filters.priceMin > 0 || filters.priceMax < 1000) {
+      filtered = filtered.filter(listing => {
+        const price = listing.price || 0;
+        return price >= filters.priceMin && price <= filters.priceMax;
+      });
+    }
+
+    // Location-based filtering
+    if (filters.location && filters.zipRadius > 0) {
+      try {
+        setLocationLoading(true);
+        filtered = await filterListingsByProximity(filtered, filters.location, filters.zipRadius);
+      } catch (error) {
+        console.error('Error filtering by location:', error);
+      }
+      setLocationLoading(false);
+    }
+
+    setFilteredListings(filtered);
+  };
+
+  const handleLocationDetected = (zipCode: string) => {
+    setFilters(prev => ({
+      ...prev,
+      location: zipCode
+    }));
+  };
+
+  const getTypeColor = (type: ListingType) => {
+    switch (type) {
+      case 'Give Away':
+        return 'bg-green-100 text-green-800';
+      case 'Sell':
+        return 'bg-blue-100 text-blue-800';
+      case 'Share':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const filterPanel = (
+    <ImprovedFilterPanel 
+      filters={filters} 
+      onFiltersChange={setFilters}
+      onLocationDetected={handleLocationDetected}
+      user={user}
+    />
+  );
+
+  return (
+    <ProtectedRoute>
+      <ResponsiveLayout showFilters={true} filterPanel={filterPanel}>
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+            <h1 className="text-2xl font-bold text-gray-900">Browse Resources</h1>
+            <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent">
+              <option>Newest First</option>
+              <option>Oldest First</option>
+              <option>Price: Low to High</option>
+              <option>Price: High to Low</option>
+            </select>
+          </div>
+          <p className="text-gray-600">Find and share resources with your community</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Showing {filteredListings.length} of {listings.length} listings
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Mobile Filters Button */}
+        <div className="lg:hidden mb-4">
+          <button className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+            Filters & Search
+          </button>
+        </div>
+
+        {/* Results */}
+        <div className="mb-4">
+          {/* Location Status */}
+          {filters.location && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700">
+                📍 Showing listings within {filters.zipRadius} miles of {filters.location}
+                {locationLoading && <span className="ml-2">• Filtering by location...</span>}
+              </p>
+            </div>
+          )}
+          <span className="text-sm text-gray-500">
+            {filteredListings.length} listings found
+          </span>
+        </div>
+
+        {/* Listings Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg border border-gray-200 animate-pulse">
+                <div className="w-full h-48 bg-gray-200 rounded-t-lg"></div>
+                <div className="p-4">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredListings.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No listings found matching your criteria.</p>
+            <p className="text-gray-400 mt-2">Try adjusting your filters or create a new listing!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {filteredListings.map(listing => (
+              <ImprovedListingCard
+                key={listing.id}
+                listing={listing}
+              />
+            ))}
+          </div>
+        )}
+      </ResponsiveLayout>
+    </ProtectedRoute>
   );
 }
