@@ -15,6 +15,9 @@ import FavoritesWatchlist from '@/components/dashboard/FavoritesWatchlist';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import AccountManagement from '@/components/dashboard/AccountManagement';
 import SellerOnboarding from '@/components/SellerOnboarding';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import WelcomeHeader from '@/components/WelcomeHeader';
+import QuickStatsBar from '@/components/QuickStatsBar';
 import { 
   Squares2X2Icon, 
   ChatBubbleLeftRightIcon,
@@ -30,6 +33,12 @@ export default function DashboardPage() {
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState({
+    totalListings: 0,
+    totalViews: 0,
+    totalMessages: 0,
+    totalShared: 0,
+  });
   const { user } = useAuth();
 
   useEffect(() => {
@@ -58,6 +67,17 @@ export default function DashboardPage() {
       })) as Listing[];
       
       setMyListings(listingsData);
+      
+      // Calculate analytics
+      const totalViews = listingsData.reduce((sum, listing) => sum + (listing.views || 0), 0);
+      const totalShared = listingsData.filter(listing => listing.type === 'Give Away').length;
+      
+      setAnalytics(prev => ({
+        ...prev,
+        totalListings: listingsData.length,
+        totalViews,
+        totalShared,
+      }));
     } catch (error) {
       console.error('Error fetching my listings:', error);
     }
@@ -83,6 +103,12 @@ export default function DashboardPage() {
       })) as Conversation[];
       
       setConversations(conversationsData);
+      
+      // Update messages count in analytics
+      setAnalytics(prev => ({
+        ...prev,
+        totalMessages: conversationsData.length,
+      }));
     } catch (error) {
       console.error('Error fetching conversations:', error);
     }
@@ -105,13 +131,22 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <ResponsiveLayout>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Manage your listings and conversations</p>
-        </div>
+        {/* Breadcrumbs */}
+        <Breadcrumbs items={[{ label: 'Dashboard' }]} />
+
+        {/* Welcome Header */}
+        <WelcomeHeader userName={user?.name || 'Friend'} />
+
+        {/* Quick Stats Bar */}
+        <QuickStatsBar 
+          totalListings={analytics.totalListings}
+          totalViews={analytics.totalViews}
+          totalMessages={analytics.totalMessages}
+          totalShared={analytics.totalShared}
+        />
 
         {/* Seller Onboarding */}
-        <div className="mb-6">
+        <div className="mb-8">
           <SellerOnboarding />
         </div>
 

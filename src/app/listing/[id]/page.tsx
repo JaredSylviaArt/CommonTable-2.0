@@ -227,9 +227,6 @@ export default function ListingDetailPage() {
                   <div className="text-3xl font-bold text-gray-900">
                     ${listing.price.toFixed(2)}
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Includes 3% platform fee
-                  </p>
                 </div>
               )}
 

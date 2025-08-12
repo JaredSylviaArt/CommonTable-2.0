@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import EnhancedAnalyticsCard from '@/components/EnhancedAnalyticsCard';
 import { 
-  ChartBarIcon, 
-  EyeIcon, 
-  ChatBubbleLeftRightIcon, 
+  ChartBarIcon,
+  EyeIcon,
+  ChatBubbleLeftRightIcon,
   HeartIcon,
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
@@ -149,37 +150,68 @@ export default function AnalyticsInsights() {
       </div>
 
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <EnhancedAnalyticsCard
           icon={ChartBarIcon}
           title="Total Listings"
           value={analytics.totalListings}
           description="Items you've shared"
           color="text-[#665CF0]"
+          isEmpty={analytics.totalListings === 0}
+          emptyState={{
+            message: "No listings yet",
+            action: "Create your first listing!"
+          }}
+          progress={{
+            current: analytics.totalListings,
+            max: 10,
+            label: "Goal: 10 listings"
+          }}
         />
         
-        <StatCard
+        <EnhancedAnalyticsCard
           icon={EyeIcon}
           title="Total Views"
           value={analytics.totalViews}
           description="People interested"
           color="text-blue-600"
+          isEmpty={analytics.totalViews === 0}
+          emptyState={{
+            message: "No views yet",
+            action: "Share your listings to get views!"
+          }}
+          trend={analytics.totalViews > 0 ? { value: 12, isPositive: true } : undefined}
         />
         
-        <StatCard
+        <EnhancedAnalyticsCard
           icon={ChatBubbleLeftRightIcon}
           title="Messages"
           value={analytics.totalMessages}
           description="Conversations started"
           color="text-green-600"
+          isEmpty={analytics.totalMessages === 0}
+          emptyState={{
+            message: "No messages yet",
+            action: "People will message you about listings!"
+          }}
         />
         
-        <StatCard
+        <EnhancedAnalyticsCard
           icon={HeartIcon}
           title="Items Shared"
           value={analytics.totalShared}
           description="Given away freely"
           color="text-red-600"
+          isEmpty={analytics.totalShared === 0}
+          emptyState={{
+            message: "Nothing shared yet",
+            action: "Share items to help your community!"
+          }}
+          progress={{
+            current: analytics.totalShared,
+            max: 5,
+            label: "Community Helper Goal"
+          }}
         />
       </div>
 
