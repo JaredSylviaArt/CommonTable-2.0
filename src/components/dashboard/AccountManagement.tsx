@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import LocationDetector from '@/components/LocationDetector';
+import SellerOnboarding from '@/components/SellerOnboarding';
 import { 
   UserCircleIcon, 
   Cog6ToothIcon,
@@ -17,7 +18,11 @@ import {
 export default function AccountManagement() {
   const { user, refreshUser } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showLocationDetector, setShowLocationDetector] = useState(false);
+  
+  // Check if user was redirected here for payment setup
+  const needsPaymentSetup = searchParams?.get('setup') === 'payments';
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
     pushNotifications: false,
@@ -98,6 +103,33 @@ export default function AccountManagement() {
       <div className="flex items-center space-x-3">
         <UserCircleIcon className="w-6 h-6 text-[#665CF0]" />
         <h2 className="text-lg font-semibold text-gray-900">Account Management</h2>
+      </div>
+
+      {/* Payment Setup Alert - Shows when redirected from create listing */}
+      {needsPaymentSetup && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-start space-x-4">
+            <ExclamationTriangleIcon className="w-6 h-6 text-blue-600 mt-1" />
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                Payment Account Required
+              </h3>
+              <p className="text-blue-800 mb-4">
+                To sell items on CommonTable, you need to set up a payment account to receive payments. 
+                This is quick and secure through Stripe.
+              </p>
+              <div className="bg-white rounded-lg border border-blue-200 p-4">
+                <SellerOnboarding />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Seller Onboarding - Always show for payment status */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Selling Account</h3>
+        <SellerOnboarding />
       </div>
 
       {/* Profile Completion */}

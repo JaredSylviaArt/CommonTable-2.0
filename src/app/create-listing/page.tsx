@@ -29,9 +29,25 @@ export default function CreateListingPage() {
   const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    // Check if user is trying to select "Sell" without payment setup
+    if (name === 'type' && value === 'Sell' && user) {
+      const canSell = user.stripeAccountId && 
+                     user.stripeChargesEnabled && 
+                     user.stripePayoutsEnabled && 
+                     user.stripeDetailsSubmitted;
+      
+      if (!canSell) {
+        // Redirect to payment setup
+        router.push('/dashboard?tab=account&setup=payments');
+        return;
+      }
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
   };
 
@@ -181,10 +197,22 @@ export default function CreateListingPage() {
                   <option value="Give Away">Give Away</option>
                   <option value="Sell">Sell</option>
                   <option value="Share">Share</option>
-                                  </select>
-                </div>
+                                                  </select>
+                
+                {/* Payment setup notice for Sell option */}
+                {formData.type === 'Sell' && user && (
+                  !user.stripeAccountId || !user.stripeChargesEnabled || !user.stripePayoutsEnabled || !user.stripeDetailsSubmitted
+                ) && (
+                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      💡 <strong>Payment account required:</strong> To sell items, you'll need to set up a payment account. 
+                      Don't worry, we'll help you set this up!
+                    </p>
+                  </div>
+                )}
+              </div>
 
-                {/* Price (only for Sell listings) */}
+              {/* Price (only for Sell listings) */}
                 {formData.type === 'Sell' && (
                   <div>
                     <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">

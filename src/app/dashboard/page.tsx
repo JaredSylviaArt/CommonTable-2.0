@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,6 +41,7 @@ export default function DashboardPage() {
     totalShared: 0,
   });
   const { user } = useAuth();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (user) {
@@ -47,6 +49,16 @@ export default function DashboardPage() {
       fetchConversations();
     }
   }, [user]);
+
+  // Handle URL parameters for direct navigation to specific tabs
+  useEffect(() => {
+    const tab = searchParams?.get('tab');
+    const setup = searchParams?.get('setup');
+    
+    if (tab === 'account' && setup === 'payments') {
+      setActiveTab('account');
+    }
+  }, [searchParams]);
 
   const fetchMyListings = async () => {
     if (!user) return;
