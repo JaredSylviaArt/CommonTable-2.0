@@ -31,20 +31,6 @@ export default function CreateListingPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
-    // Check if user is trying to select "Sell" without payment setup
-    if (name === 'type' && value === 'Sell' && user) {
-      const canSell = user.stripeAccountId && 
-                     user.stripeChargesEnabled && 
-                     user.stripePayoutsEnabled && 
-                     user.stripeDetailsSubmitted;
-      
-      if (!canSell) {
-        // Redirect to payment setup
-        router.push('/dashboard?tab=account&setup=payments');
-        return;
-      }
-    }
-    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -203,10 +189,10 @@ export default function CreateListingPage() {
                 {formData.type === 'Sell' && user && (
                   !user.stripeAccountId || !user.stripeChargesEnabled || !user.stripePayoutsEnabled || !user.stripeDetailsSubmitted
                 ) && (
-                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      💡 <strong>Payment account required:</strong> To sell items, you'll need to set up a payment account. 
-                      Don't worry, we'll help you set this up!
+                  <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-800">
+                      💰 <strong>Payment setup needed:</strong> You can create this listing now, but you'll need to set up payments before receiving any sales. 
+                      <a href="/dashboard?tab=account" className="text-amber-900 underline hover:text-amber-700 ml-1">Set up now →</a>
                     </p>
                   </div>
                 )}

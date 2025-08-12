@@ -196,10 +196,22 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
           )}
           
           {/* Type Badge */}
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-3 left-3 flex flex-col gap-2">
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(listing.type)}`}>
               {listing.type}
             </span>
+            
+            {/* Payment Setup Required Badge - Only for sell listings without payment setup */}
+            {listing.type === 'Sell' && listingOwner && (
+              !listingOwner.stripeAccountId || 
+              !listingOwner.stripeChargesEnabled || 
+              !listingOwner.stripePayoutsEnabled || 
+              !listingOwner.stripeDetailsSubmitted
+            ) && (
+              <span className="px-2 py-1 rounded-full text-xs font-medium bg-amber-500 text-white">
+                Payment Setup Required
+              </span>
+            )}
           </div>
 
           {/* Actions */}

@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { auth } from '@/lib/firebase';
-import { ShoppingCartIcon } from '@heroicons/react/24/outline';
-import { Listing } from '@/types';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { ShoppingCartIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { Listing, User } from '@/types';
 
 interface BuyButtonProps {
   listing: Listing;
@@ -14,7 +15,27 @@ interface BuyButtonProps {
 export default function BuyButton({ listing, className = '' }: BuyButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPaymentSetupModal, setShowPaymentSetupModal] = useState(false);
+  const [sellerNeedsSetup, setSellerNeedsSetup] = useState(false);
   const { user } = useAuth();
+
+  const checkSellerPaymentSetup = async (): Promise<boolean> => {
+    try {
+      const sellerDoc = await getDoc(doc(db, 'users', listing.userId));
+      if (sellerDoc.exists()) {
+        const seller = sellerDoc.data() as User;
+        const canReceivePayments = seller.stripeAccountId && 
+                                 seller.stripeChargesEnabled && 
+                                 seller.stripePayoutsEnabled && 
+                                 seller.stripeDetailsSubmitted;
+        return canReceivePayments;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking seller payment setup:', error);
+      return false;
+    }
+  };
 
   const handlePurchase = async () => {
     if (!user) {
@@ -39,6 +60,15 @@ export default function BuyButton({ listing, className = '' }: BuyButtonProps) {
 
     setLoading(true);
     setError('');
+
+    // Check if seller has payment setup
+    const sellerCanReceivePayments = await checkSellerPaymentSetup();
+    if (!sellerCanReceivePayments) {
+      setSellerNeedsSetup(true);
+      setShowPaymentSetupModal(true);
+      setLoading(false);
+      return;
+    }
 
     try {
       if (!auth.currentUser) {
@@ -101,6 +131,46 @@ export default function BuyButton({ listing, className = '' }: BuyButtonProps) {
         <ShoppingCartIcon className="h-5 w-5" />
         {loading ? 'Processing...' : `Buy for $${listing.price?.toFixed(2) || '0.00'}`}
       </button>
+
+      {/* Payment Setup Required Modal */}
+      {showPaymentSetupModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-start space-x-4">
+              <ExclamationTriangleIcon className="w-6 h-6 text-amber-500 mt-1" />
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Seller Payment Setup Required
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  The seller of this item hasn't completed their payment setup yet, so they can't receive payments. 
+                  We've notified them to complete their setup.
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  You can bookmark this item and try again later, or contact the seller directly about setting up payments.
+                </p>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => setShowPaymentSetupModal(false)}
+                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Got it
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Add to favorites/bookmark
+                      setShowPaymentSetupModal(false);
+                    }}
+                    className="flex-1 px-4 py-2 bg-[#665CF0] text-white rounded-lg hover:bg-[#5A52E8] transition-colors"
+                  >
+                    Bookmark Item
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
