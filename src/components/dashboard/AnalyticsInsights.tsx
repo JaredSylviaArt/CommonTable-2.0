@@ -81,7 +81,7 @@ export default function AnalyticsInsights() {
 
       setAnalytics({
         totalListings,
-        totalViews: totalViews || Math.floor(Math.random() * 100) + 20, // Mock data for demo
+        totalViews: totalViews,
         totalMessages,
         totalShared,
         mostPopularCategory,
