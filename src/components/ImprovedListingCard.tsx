@@ -2,10 +2,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Listing } from '@/types';
 import { HeartIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 
 interface ImprovedListingCardProps {
   listing: Listing;
@@ -14,6 +18,9 @@ interface ImprovedListingCardProps {
 
 export default function ImprovedListingCard({ listing, showUser = true }: ImprovedListingCardProps) {
   const [isLiked, setIsLiked] = useState(false);
+  const [isMessaging, setIsMessaging] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -113,9 +120,9 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
               <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                 {listing.category}
               </span>
-              {listing.type === 'Sell' && (
+              {listing.type === 'Sell' && listing.price && (
                 <span className="text-lg font-bold text-[#665CF0]">
-                  ${Math.floor(Math.random() * 200) + 50}.00
+                  ${listing.price.toFixed(2)}
                 </span>
               )}
             </div>

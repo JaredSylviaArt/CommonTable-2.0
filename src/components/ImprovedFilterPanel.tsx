@@ -48,11 +48,34 @@ export default function ImprovedFilterPanel({
     });
   };
 
+  // Check if any filters are active
+  const hasActiveFilters = filters.type || filters.category || filters.searchTerm || 
+    filters.condition || filters.datePosted || filters.location ||
+    filters.zipRadius !== 25 || filters.priceMin > 0 || filters.priceMax < 1000;
+
+  // Count active filters
+  const activeFilterCount = [
+    filters.type,
+    filters.category,
+    filters.searchTerm,
+    filters.condition,
+    filters.datePosted,
+    filters.location,
+    filters.zipRadius !== 25 ? 'zipRadius' : '',
+    filters.priceMin > 0 ? 'priceMin' : '',
+    filters.priceMax < 1000 ? 'priceMax' : ''
+  ].filter(Boolean).length;
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
       <div className="flex items-center space-x-2 mb-6">
         <FunnelIcon className="w-5 h-5 text-gray-500" />
         <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+        {activeFilterCount > 0 && (
+          <span className="bg-[#665CF0] text-white text-xs px-2 py-1 rounded-full">
+            {activeFilterCount}
+          </span>
+        )}
       </div>
 
       <div className="space-y-6">
@@ -189,6 +212,21 @@ export default function ImprovedFilterPanel({
             <option value="month">This Month</option>
           </select>
         </div>
+      </div>
+
+      {/* Clear Filters Button */}
+      <div className="mt-6 pt-4 border-t border-gray-200">
+        <button
+          onClick={clearFilters}
+          disabled={!hasActiveFilters}
+          className={`w-full px-4 py-2 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:ring-offset-2 transition-colors ${
+            hasActiveFilters
+              ? 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+              : 'text-gray-400 bg-gray-50 border border-gray-200 cursor-not-allowed'
+          }`}
+        >
+          {hasActiveFilters ? 'Clear All Filters' : 'No Active Filters'}
+        </button>
       </div>
     </div>
   );
