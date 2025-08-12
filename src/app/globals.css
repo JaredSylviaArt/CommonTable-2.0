@@ -44,7 +44,7 @@ body {
   color: #6b7280 !important; /* gray-500 */
 }
 
-/* Ensure all input text is dark and readable */
+/* Ensure all input text is dark and readable - highest specificity */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -57,6 +57,22 @@ select {
   color: #111827 !important; /* gray-900 - very dark for high contrast */
 }
 
+/* More specific selectors to override Tailwind */
+.flex-1.px-3.py-2,
+input.flex-1,
+input[placeholder],
+textarea[placeholder] {
+  color: #111827 !important; /* Force dark text */
+}
+
+/* Target any input with common Tailwind classes */
+input.border,
+input.rounded-lg,
+textarea.border,
+textarea.rounded-lg {
+  color: #111827 !important;
+}
+
 /* Dark mode input text */
 @media (prefers-color-scheme: dark) {
   input[type="text"],
@@ -67,7 +83,15 @@ select {
   input[type="url"],
   input[type="number"],
   textarea,
-  select {
+  select,
+  .flex-1.px-3.py-2,
+  input.flex-1,
+  input[placeholder],
+  textarea[placeholder],
+  input.border,
+  input.rounded-lg,
+  textarea.border,
+  textarea.rounded-lg {
     color: #f9fafb !important; /* gray-50 - light text for dark mode */
   }
 }
