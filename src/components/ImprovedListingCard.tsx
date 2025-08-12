@@ -77,7 +77,12 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
   };
 
   const handleContactSeller = async () => {
-    if (!user || !listing || user.uid === listing.userId) return;
+    console.log('handleContactSeller called', { user: user?.uid, listingUserId: listing.userId });
+    
+    if (!user || !listing || user.uid === listing.userId) {
+      console.log('Cannot message: missing user/listing or own listing');
+      return;
+    }
 
     setIsMessaging(true);
 
@@ -103,9 +108,11 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
         };
         const conversationDoc = await addDoc(conversationsRef, newConversation);
         conversationId = conversationDoc.id;
+        console.log('Created new conversation:', conversationId);
       } else {
         // Use existing conversation
         conversationId = existingConversations.docs[0].id;
+        console.log('Using existing conversation:', conversationId);
       }
 
       router.push(`/conversation/${conversationId}`);
@@ -242,6 +249,14 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
                 </>
               )}
             </div>
+            {/* Debug info */}
+            {console.log('Arrow visibility check:', { 
+              hasUser: !!user, 
+              userUid: user?.uid, 
+              listingUserId: listing.userId, 
+              isDifferentUser: user && user.uid !== listing.userId 
+            })}
+            
             {user && user.uid !== listing.userId && (
               <button 
                 onClick={(e) => {
@@ -261,6 +276,15 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
                   </svg>
                 )}
               </button>
+            )}
+            
+            {/* Fallback arrow for debugging - always show */}
+            {(!user || user.uid === listing.userId) && (
+              <div className="text-gray-400 p-1" title="Debug: No messaging available">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
             )}
           </div>
         )}
