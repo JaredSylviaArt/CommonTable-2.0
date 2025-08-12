@@ -43,10 +43,11 @@ export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       
       {/* Sidebar */}
       <div className={`
-        fixed lg:static inset-y-0 left-0 z-50 lg:z-auto
+        fixed inset-y-0 left-0 z-50
         flex flex-col w-64 bg-white border-r border-gray-200 min-h-screen
-        transform transition-transform duration-300 ease-in-out lg:transform-none
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        transform transition-transform duration-300 ease-in-out
+        lg:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Logo */}
         <div className="flex items-center justify-between px-6 py-6 border-b border-gray-200">

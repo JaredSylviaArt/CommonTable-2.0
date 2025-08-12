@@ -21,22 +21,22 @@ export default function ResponsiveLayout({ children, showFilters = false, filter
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:ml-0">
+      {/* Main Content - Always account for sidebar on desktop */}
+      <div className="flex-1 flex flex-col lg:ml-64">
         {/* Top Bar */}
         <TopBar onMenuClick={toggleSidebar} />
         
         {/* Content Area */}
-        <div className="flex-1 flex flex-col lg:flex-row">
+        <div className="flex-1 flex flex-col lg:flex-row min-h-0">
           {/* Filters - Hidden on mobile, collapsible on tablet */}
           {showFilters && filterPanel && (
-            <div className="hidden lg:block w-80 p-6 border-r border-gray-200 bg-white overflow-y-auto">
+            <div className="hidden lg:block w-80 p-6 border-r border-gray-200 bg-white overflow-y-auto flex-shrink-0">
               {filterPanel}
             </div>
           )}
 
           {/* Main Content */}
-          <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
+          <div className="flex-1 p-4 sm:p-6 overflow-y-auto min-w-0">
             {children}
           </div>
         </div>
