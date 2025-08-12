@@ -3,13 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Listing } from '@/types';
+import { Listing, User } from '@/types';
 import { HeartIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
 
 interface ImprovedListingCardProps {
   listing: Listing;
@@ -19,8 +19,32 @@ interface ImprovedListingCardProps {
 export default function ImprovedListingCard({ listing, showUser = true }: ImprovedListingCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isMessaging, setIsMessaging] = useState(false);
+  const [listingOwner, setListingOwner] = useState<User | null>(null);
+  const [loadingOwner, setLoadingOwner] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (showUser && listing.userId) {
+      fetchListingOwner();
+    }
+  }, [listing.userId, showUser]);
+
+  const fetchListingOwner = async () => {
+    if (loadingOwner) return;
+    setLoadingOwner(true);
+    
+    try {
+      const ownerDoc = await getDoc(doc(db, 'users', listing.userId));
+      if (ownerDoc.exists()) {
+        setListingOwner({ uid: listing.userId, ...ownerDoc.data() } as User);
+      }
+    } catch (error) {
+      console.error('Error fetching listing owner:', error);
+    } finally {
+      setLoadingOwner(false);
+    }
+  };
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -52,12 +76,47 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
     }
   };
 
-  // Mock user data - in real app this would come from the listing
-  const mockUser = {
-    name: 'John Smith',
-    church: 'First Baptist',
-    avatar: 'J'
+  const handleContactSeller = async () => {
+    if (!user || !listing || user.uid === listing.userId) return;
+
+    setIsMessaging(true);
+
+    try {
+      // Check if conversation already exists
+      const conversationsRef = collection(db, 'conversations');
+      const q = query(
+        conversationsRef,
+        where('listingId', '==', listing.id),
+        where('participants', 'array-contains', user.uid)
+      );
+      const existingConversations = await getDocs(q);
+
+      let conversationId;
+
+      if (existingConversations.empty) {
+        // Create new conversation
+        const newConversation = {
+          listingId: listing.id,
+          participants: [user.uid, listing.userId],
+          createdAt: new Date(),
+          lastMessageAt: new Date(),
+        };
+        const conversationDoc = await addDoc(conversationsRef, newConversation);
+        conversationId = conversationDoc.id;
+      } else {
+        // Use existing conversation
+        conversationId = existingConversations.docs[0].id;
+      }
+
+      router.push(`/conversation/${conversationId}`);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+    } finally {
+      setIsMessaging(false);
+    }
   };
+
+
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 group">
@@ -146,22 +205,63 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
           <div className="flex items-center space-x-3 pt-3 border-t border-gray-100">
             <div className="w-6 h-6 bg-[#665CF0] rounded-full flex items-center justify-center">
               <span className="text-white text-xs font-medium">
-                {mockUser.avatar}
+                {listingOwner?.name?.charAt(0) || '?'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {mockUser.name}
-              </p>
-              <p className="text-xs text-gray-500 truncate">
-                {mockUser.church}
-              </p>
+              {loadingOwner ? (
+                <>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-1"></div>
+                  <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                </>
+              ) : listingOwner ? (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleContactSeller();
+                    }}
+                    disabled={isMessaging || (user && user.uid === listing.userId)}
+                    className="text-sm font-medium text-gray-900 truncate hover:text-[#665CF0] transition-colors text-left disabled:hover:text-gray-900"
+                  >
+                    {listingOwner.name}
+                  </button>
+                  <p className="text-xs text-gray-500 truncate">
+                    {listingOwner.churchRole} at {listingOwner.churchName}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    Unknown User
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    Community Member
+                  </p>
+                </>
+              )}
             </div>
-            <button className="text-[#665CF0] hover:text-[#5A52E8] transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+            {user && user.uid !== listing.userId && (
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleContactSeller();
+                }}
+                disabled={isMessaging}
+                className="text-[#665CF0] hover:text-[#5A52E8] transition-colors disabled:opacity-50 p-1"
+                title="Send message"
+              >
+                {isMessaging ? (
+                  <div className="w-4 h-4 border-2 border-[#665CF0] border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+              </button>
+            )}
           </div>
         )}
       </div>
