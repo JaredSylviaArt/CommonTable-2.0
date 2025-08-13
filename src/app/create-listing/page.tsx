@@ -10,6 +10,9 @@ import { UploadResult } from '@/lib/imageUpload';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Header from '@/components/Header';
 import ImageUpload from '@/components/ImageUpload';
+import PriceSuggestion from '@/components/PriceSuggestion';
+import SidebarAd from '@/components/ads/SidebarAd';
+import InterstitialAd from '@/components/ads/InterstitialAd';
 
 export default function CreateListingPage() {
   const [formData, setFormData] = useState({
@@ -24,6 +27,7 @@ export default function CreateListingPage() {
   const [uploadedImage, setUploadedImage] = useState<UploadResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showInterstitial, setShowInterstitial] = useState(false);
   
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -72,7 +76,15 @@ export default function CreateListingPage() {
 
       await addDoc(collection(db, 'listings'), listingData);
       
-      router.push('/dashboard');
+      setLoading(false);
+      
+      // Show interstitial ad after successful creation
+      setShowInterstitial(true);
+      
+      // Auto-redirect after 3 seconds if user doesn't close ad
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 3000);
     } catch (error) {
       console.error('Error creating listing:', error);
       setError('Failed to create listing. Please try again.');
@@ -118,7 +130,10 @@ export default function CreateListingPage() {
       <div className="min-h-screen bg-gray-50">
         <Header />
         
-        <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="lg:grid lg:grid-cols-4 lg:gap-8">
+            {/* Main Form */}
+            <div className="lg:col-span-3">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Listing</h1>
             <p className="text-gray-600">Share a resource with your church community</p>
@@ -221,6 +236,17 @@ export default function CreateListingPage() {
                         placeholder="0.00"
                       />
                     </div>
+                    
+                    {/* Price Suggestion */}
+                    {formData.category && (
+                      <div className="mt-4">
+                        <PriceSuggestion
+                          category={formData.category}
+                          userZip={user?.zipCode}
+                          onPriceSelect={(price) => setFormData(prev => ({ ...prev, price: price.toString() }))}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -317,7 +343,27 @@ export default function CreateListingPage() {
               </div>
             </div>
           </form>
+            </div>
+
+            {/* Sidebar */}
+            <div className="lg:col-span-1 mt-8 lg:mt-0">
+              <div className="space-y-6">
+                {/* Sidebar Ad */}
+                <SidebarAd location="create-listing-sidebar" />
+              </div>
+            </div>
+          </div>
         </main>
+
+        {/* Interstitial Ad */}
+        <InterstitialAd
+          location="create-listing-after-submit"
+          isOpen={showInterstitial}
+          onClose={() => {
+            setShowInterstitial(false);
+            router.push('/dashboard');
+          }}
+        />
       </div>
     </ProtectedRoute>
   );

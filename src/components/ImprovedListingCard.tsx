@@ -7,6 +7,7 @@ import { Listing, User } from '@/types';
 import { HeartIcon, ShareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { getListingPlaceholder } from '@/lib/placeholderImages';
+import { trackEvent } from '@/lib/analytics';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
@@ -83,6 +84,16 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
   const toggleFavorite = async () => {
     if (!user) return;
 
+    // Track favorite event
+    await trackEvent({
+      userId: user.uid,
+      eventType: 'favorite',
+      listingId: listing.id,
+      category: listing.category,
+      userRole: user.churchRole,
+      userZip: user.zipCode
+    });
+
     try {
       if (isLiked && favoriteId) {
         // Remove from favorites
@@ -147,6 +158,16 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
     if (!user || !listing || user.uid === listing.userId) return;
 
     setIsMessaging(true);
+
+    // Track contact seller event
+    await trackEvent({
+      userId: user.uid,
+      eventType: 'contact',
+      listingId: listing.id,
+      category: listing.category,
+      userRole: user.churchRole,
+      userZip: user.zipCode
+    });
 
     try {
       // Check if conversation already exists

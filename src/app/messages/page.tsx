@@ -7,6 +7,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Conversation } from '@/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ResponsiveLayout from '@/components/ResponsiveLayout';
+import BannerAd from '@/components/ads/BannerAd';
+import NativeAd from '@/components/ads/NativeAd';
 import ConversationList from '@/components/ConversationList';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
@@ -53,6 +55,11 @@ export default function MessagesPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages</h1>
           <p className="text-gray-600">Your conversations about listings</p>
+        </div>
+
+        {/* Top Banner Ad */}
+        <div className="mb-6">
+          <BannerAd location="messages-chat-top" />
         </div>
 
         {/* Messages Content */}

@@ -6,6 +6,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ResponsiveLayout from '@/components/ResponsiveLayout';
+import BannerAd from '@/components/ads/BannerAd';
 import { UserCircleIcon, BellIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 export default function SettingsPage() {
@@ -76,6 +77,11 @@ export default function SettingsPage() {
         </div>
 
         <div className="max-w-4xl space-y-6">
+              {/* Banner Ad */}
+              <div className="mb-6">
+                <BannerAd location="settings-between-sections" />
+              </div>
+
               {/* Profile Section */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <div className="flex items-center space-x-3 mb-6">
@@ -241,10 +247,15 @@ export default function SettingsPage() {
                   >
                     Sign Out
                   </button>
-                </div>
-              </div>
-            </div>
-        </ResponsiveLayout>
+                            </div>
+          </div>
+        </div>
+
+        {/* Bottom Banner Ad */}
+        <div className="mt-8 max-w-4xl">
+          <BannerAd location="settings-bottom" />
+        </div>
+      </ResponsiveLayout>
     </ProtectedRoute>
   );
 }

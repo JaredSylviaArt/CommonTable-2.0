@@ -12,6 +12,9 @@ import ImprovedListingCard from '@/components/ImprovedListingCard';
 import ConversationList from '@/components/ConversationList';
 import FavoritesWatchlist from '@/components/dashboard/FavoritesWatchlist';
 import AccountManagement from '@/components/dashboard/AccountManagement';
+import BannerAd from '@/components/ads/BannerAd';
+import NativeAd from '@/components/ads/NativeAd';
+import SidebarAd from '@/components/ads/SidebarAd';
 import SimplifiedSellerOnboarding from '@/components/SimplifiedSellerOnboarding';
 import { 
   Squares2X2Icon, 
@@ -188,6 +191,9 @@ export default function DashboardPage() {
           <>
             {activeTab === 'overview' && (
               <div className="space-y-6">
+                {/* Top Banner Ad */}
+                <BannerAd location="dashboard-overview-top" />
+                
                 {/* Simple Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-white p-4 rounded-lg border border-gray-200">
@@ -205,6 +211,16 @@ export default function DashboardPage() {
                   <div className="bg-white p-4 rounded-lg border border-gray-200">
                     <p className="text-sm text-gray-600">Shared</p>
                     <p className="text-2xl font-semibold text-gray-900">{analytics.totalShared}</p>
+                  </div>
+                </div>
+
+                {/* Native Ad Between Sections */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="md:col-span-2">
+                    <NativeAd location="dashboard-between-sections" />
+                  </div>
+                  <div className="hidden md:block">
+                    <SidebarAd location="dashboard-sidebar" />
                   </div>
                 </div>
                 

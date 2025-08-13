@@ -12,6 +12,10 @@ import ResponsiveLayout from '@/components/ResponsiveLayout';
 import ImprovedListingCard from '@/components/ImprovedListingCard';
 import ImprovedFilterPanel from '@/components/ImprovedFilterPanel';
 import LocationDetector from '@/components/LocationDetector';
+import BannerAd from '@/components/ads/BannerAd';
+import NativeAd from '@/components/ads/NativeAd';
+import SidebarAd from '@/components/ads/SidebarAd';
+
 
 export default function Home() {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -116,9 +120,9 @@ export default function Home() {
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return b.createdAt.getTime() - a.createdAt.getTime();
         case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          return a.createdAt.getTime() - b.createdAt.getTime();
         case 'price-low':
           // For price sorting, treat Give Away/Share as $0
           const priceA = a.type === 'Sell' ? (a.price || 0) : 0;
@@ -132,6 +136,8 @@ export default function Home() {
           return 0;
       }
     });
+
+    console.log('Sorting by:', sortBy, 'Results:', sorted.length, 'items');
 
     setFilteredListings(sorted);
   };
@@ -157,12 +163,19 @@ export default function Home() {
   };
 
   const filterPanel = (
-    <ImprovedFilterPanel 
-      filters={filters} 
-      onFiltersChange={setFilters}
-      onLocationDetected={handleLocationDetected}
-      user={user}
-    />
+    <div className="space-y-6">
+      <ImprovedFilterPanel 
+        filters={filters} 
+        onFiltersChange={setFilters}
+        onLocationDetected={handleLocationDetected}
+        user={user}
+      />
+      
+      {/* Sidebar Ad */}
+      <div className="hidden lg:block">
+        <SidebarAd location="browse-sidebar" />
+      </div>
+    </div>
   );
 
   return (
@@ -187,6 +200,11 @@ export default function Home() {
           <p className="text-sm text-gray-500 mt-2">
             Showing {filteredListings.length} of {listings.length} listings
           </p>
+        </div>
+
+        {/* Top Banner Ad */}
+        <div className="mb-6">
+          <BannerAd location="browse-top-banner" />
         </div>
 
         {/* Mobile Filters Button */}
@@ -233,11 +251,17 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {filteredListings.map(listing => (
-              <ImprovedListingCard
-                key={listing.id}
-                listing={listing}
-              />
+            {filteredListings.map((listing, index) => (
+              <div key={listing.id}>
+                <ImprovedListingCard listing={listing} />
+                
+                {/* Native Ad every 6 listings */}
+                {(index + 1) % 6 === 0 && index < filteredListings.length - 1 && (
+                  <div className="col-span-1 mt-4">
+                    <NativeAd location="browse-grid-native" />
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
