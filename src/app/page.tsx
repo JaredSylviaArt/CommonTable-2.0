@@ -20,6 +20,7 @@ export default function Home() {
   const [locationLoading, setLocationLoading] = useState(false);
   const { user } = useAuth();
   const searchParams = useSearchParams();
+  const [sortBy, setSortBy] = useState('newest');
   const [filters, setFilters] = useState({
     type: '' as ListingType | '',
     category: '' as ListingCategory | '',
@@ -38,7 +39,7 @@ export default function Home() {
 
   useEffect(() => {
     applyFilters();
-  }, [filters, listings]);
+  }, [filters, listings, sortBy]);
 
   // Handle search from URL params
   useEffect(() => {
@@ -111,7 +112,29 @@ export default function Home() {
       setLocationLoading(false);
     }
 
-    setFilteredListings(filtered);
+    // Apply sorting to the filtered results
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'price-low':
+          // For price sorting, treat Give Away/Share as $0
+          const priceA = a.type === 'Sell' ? (a.price || 0) : 0;
+          const priceB = b.type === 'Sell' ? (b.price || 0) : 0;
+          return priceA - priceB;
+        case 'price-high':
+          const priceA2 = a.type === 'Sell' ? (a.price || 0) : 0;
+          const priceB2 = b.type === 'Sell' ? (b.price || 0) : 0;
+          return priceB2 - priceA2;
+        default:
+          return 0;
+      }
+    });
+
+    console.log(`Applied ${sortBy} sorting to ${sorted.length} listings`);
+    setFilteredListings(sorted);
   };
 
   const handleLocationDetected = (zipCode: string) => {
@@ -150,11 +173,15 @@ export default function Home() {
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
             <h1 className="text-2xl font-bold text-gray-900">Browse Resources</h1>
-            <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent text-dark-force">
-              <option>Newest First</option>
-              <option>Oldest First</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
+            <select 
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent text-dark-force"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
             </select>
           </div>
           <p className="text-gray-600">Find and share resources with your community</p>
