@@ -108,28 +108,28 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'Give Away':
-        return 'bg-green-500 text-white';
+        return 'bg-gray-100 text-gray-700 border border-gray-200';
       case 'Sell':
-        return 'bg-blue-500 text-white';
+        return 'bg-gray-100 text-gray-700 border border-gray-200';
       case 'Share':
-        return 'bg-purple-500 text-white';
+        return 'bg-gray-100 text-gray-700 border border-gray-200';
       default:
-        return 'bg-gray-500 text-white';
+        return 'bg-gray-100 text-gray-700 border border-gray-200';
     }
   };
 
   const getConditionColor = (condition: string) => {
     switch (condition) {
       case 'New':
-        return 'text-green-600';
+        return 'text-gray-600';
       case 'Like New':
-        return 'text-blue-600';
+        return 'text-gray-600';
       case 'Good':
-        return 'text-yellow-600';
+        return 'text-gray-600';
       case 'Fair':
-        return 'text-orange-600';
+        return 'text-gray-600';
       case 'Poor':
-        return 'text-red-600';
+        return 'text-gray-600';
       default:
         return 'text-gray-600';
     }
@@ -207,8 +207,8 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
               !listingOwner.debitCardLast4 && 
               !listingOwner.stripeChargesEnabled
             ) && (
-              <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-500 text-white">
-                Quick Setup Available
+              <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                Setup Available
               </span>
             )}
           </div>
@@ -251,13 +251,13 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
                 {listing.category}
               </span>
               {listing.type === 'Sell' && listing.price && (
-                <span className="text-lg font-bold text-[#665CF0]">
+                <span className="text-lg font-semibold text-gray-900">
                   ${listing.price.toFixed(2)}
                 </span>
               )}
             </div>
             <Link href={`/listing/${listing.id}`}>
-              <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 hover:text-[#665CF0] transition-colors">
+              <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 hover:text-gray-700 transition-colors">
                 {listing.title}
               </h3>
             </Link>
@@ -294,7 +294,7 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
                       handleContactSeller();
                     }}
                     disabled={isMessaging || (user && user.uid === listing.userId)}
-                    className="text-sm font-medium text-gray-900 truncate hover:text-[#665CF0] transition-colors text-left disabled:hover:text-gray-900"
+                    className="text-sm font-medium text-gray-900 truncate hover:text-gray-700 transition-colors text-left disabled:hover:text-gray-900"
                   >
                     {listingOwner.name}
                   </button>
