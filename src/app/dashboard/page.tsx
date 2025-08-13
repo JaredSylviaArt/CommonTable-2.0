@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -24,7 +24,7 @@ import {
   UserCircleIcon
 } from '@heroicons/react/24/outline';
 
-export default function DashboardPage() {
+function DashboardContent() {
   const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'inbox' | 'favorites' | 'account'>('overview');
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -280,5 +280,21 @@ export default function DashboardPage() {
         )}
       </ResponsiveLayout>
     </ProtectedRoute>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <ProtectedRoute>
+        <ResponsiveLayout>
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#665CF0]"></div>
+          </div>
+        </ResponsiveLayout>
+      </ProtectedRoute>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }

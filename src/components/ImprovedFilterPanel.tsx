@@ -150,7 +150,7 @@ export default function ImprovedFilterPanel({
             onChange={(e) => updateFilter('category', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent text-sm"
           >
-            <option value="">All</option>
+            <option value="">All Categories</option>
             <option value="Books & Resources">Books & Resources</option>
             <option value="Equipment & Tech">Equipment & Tech</option>
             <option value="Furniture">Furniture</option>
@@ -171,7 +171,7 @@ export default function ImprovedFilterPanel({
             onChange={(e) => updateFilter('type', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent text-sm"
           >
-            <option value="">All</option>
+            <option value="">All Types</option>
             <option value="Give Away">Give Away</option>
             <option value="Sell">Sell</option>
             <option value="Share">Share</option>
@@ -188,7 +188,7 @@ export default function ImprovedFilterPanel({
             onChange={(e) => updateFilter('condition', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent text-sm"
           >
-            <option value="">All</option>
+            <option value="">Any Condition</option>
             <option value="New">New</option>
             <option value="Like New">Like New</option>
             <option value="Good">Good</option>

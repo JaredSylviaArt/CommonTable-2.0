@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { collection, query, orderBy, getDocs, where, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -17,7 +17,7 @@ import NativeAd from '@/components/ads/NativeAd';
 import SidebarAd from '@/components/ads/SidebarAd';
 
 
-export default function Home() {
+function HomeContent() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -267,5 +267,21 @@ export default function Home() {
         )}
       </ResponsiveLayout>
     </ProtectedRoute>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <ProtectedRoute>
+        <ResponsiveLayout showFilters={true} filterPanel={<div className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">Loading...</div>}>
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#665CF0]"></div>
+          </div>
+        </ResponsiveLayout>
+      </ProtectedRoute>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
