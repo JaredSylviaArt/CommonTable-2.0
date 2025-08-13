@@ -201,15 +201,14 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
               {listing.type}
             </span>
             
-            {/* Payment Setup Required Badge - Only for sell listings without payment setup */}
+            {/* Payment Setup Badge - Only for sell listings without any payment method */}
             {listing.type === 'Sell' && listingOwner && (
-              !listingOwner.stripeAccountId || 
-              !listingOwner.stripeChargesEnabled || 
-              !listingOwner.stripePayoutsEnabled || 
-              !listingOwner.stripeDetailsSubmitted
+              !listingOwner.canReceivePayments && 
+              !listingOwner.debitCardLast4 && 
+              !listingOwner.stripeChargesEnabled
             ) && (
-              <span className="px-2 py-1 rounded-full text-xs font-medium bg-amber-500 text-white">
-                Payment Setup Required
+              <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-500 text-white">
+                Quick Setup Available
               </span>
             )}
           </div>

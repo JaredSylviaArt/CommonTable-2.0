@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import LocationDetector from '@/components/LocationDetector';
-import SellerOnboarding from '@/components/SellerOnboarding';
+import SimplifiedSellerOnboarding from '@/components/SimplifiedSellerOnboarding';
 import { 
   UserCircleIcon, 
   Cog6ToothIcon,
@@ -119,7 +119,7 @@ export default function AccountManagement() {
                 This is quick and secure through Stripe.
               </p>
               <div className="bg-white rounded-lg border border-blue-200 p-4">
-                <SellerOnboarding />
+                <SimplifiedSellerOnboarding />
               </div>
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function AccountManagement() {
       {/* Seller Onboarding - Always show for payment status */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Selling Account</h3>
-        <SellerOnboarding />
+                      <SimplifiedSellerOnboarding />
       </div>
 
       {/* Profile Completion */}

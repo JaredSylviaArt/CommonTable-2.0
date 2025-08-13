@@ -24,10 +24,9 @@ export default function BuyButton({ listing, className = '' }: BuyButtonProps) {
       const sellerDoc = await getDoc(doc(db, 'users', listing.userId));
       if (sellerDoc.exists()) {
         const seller = sellerDoc.data() as User;
-        const canReceivePayments = seller.stripeAccountId && 
-                                 seller.stripeChargesEnabled && 
-                                 seller.stripePayoutsEnabled && 
-                                 seller.stripeDetailsSubmitted;
+        const canReceivePayments = seller.canReceivePayments || 
+                                 seller.debitCardLast4 || 
+                                 (seller.stripeAccountId && seller.stripeChargesEnabled && seller.stripeDetailsSubmitted);
         return canReceivePayments;
       }
       return false;
@@ -143,8 +142,8 @@ export default function BuyButton({ listing, className = '' }: BuyButtonProps) {
                   Seller Payment Setup Required
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  The seller of this item hasn't completed their payment setup yet, so they can't receive payments. 
-                  We've notified them to complete their setup.
+                  The seller just needs to add a debit card to receive payments (takes 30 seconds!). 
+                  We've notified them about this quick setup.
                 </p>
                 <p className="text-sm text-gray-500 mb-4">
                   You can bookmark this item and try again later, or contact the seller directly about setting up payments.

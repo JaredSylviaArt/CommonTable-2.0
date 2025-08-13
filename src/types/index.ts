@@ -10,6 +10,13 @@ export interface User {
   stripeChargesEnabled?: boolean;
   stripePayoutsEnabled?: boolean;
   stripeDetailsSubmitted?: boolean;
+  // Simplified payment setup
+  debitCardLast4?: string;
+  debitCardBrand?: string;
+  debitCardToken?: string;
+  totalSales?: number;
+  canReceivePayments?: boolean;
+  needsFullVerification?: boolean; // Triggers at $600
 }
 
 export interface Listing {
