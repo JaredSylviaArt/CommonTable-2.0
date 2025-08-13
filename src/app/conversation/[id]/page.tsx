@@ -14,6 +14,7 @@ import {
   updateDoc 
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { notifyNewMessage } from '@/lib/notifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { Message, Conversation, User, Listing } from '@/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -123,6 +124,17 @@ export default function ConversationPage() {
         lastMessage: newMessage.trim(),
         lastMessageAt: new Date(),
       });
+
+      // Send notification to other participant
+      const otherParticipant = conversation.participants.find(p => p !== user.uid);
+      if (otherParticipant && conversation.listingId) {
+        await notifyNewMessage(
+          otherParticipant,
+          user.uid,
+          conversation.id,
+          conversation.listingId
+        );
+      }
 
       setNewMessage('');
     } catch (error) {

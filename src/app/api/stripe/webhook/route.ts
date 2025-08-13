@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { db } from '@/lib/firebase';
+import { notifyListingSold, notifyPurchaseComplete } from '@/lib/notifications';
 import { doc, updateDoc, addDoc, collection } from 'firebase/firestore';
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -53,6 +54,10 @@ export async function POST(request: NextRequest) {
           });
 
           console.log(`Sale completed for listing ${listingId}`);
+
+          // Send notifications
+          await notifyListingSold(sellerId, buyerId, listingId);
+          await notifyPurchaseComplete(buyerId, sellerId, listingId);
         }
         break;
       }

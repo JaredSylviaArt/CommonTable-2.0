@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, addDoc, doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { notifyListingFavorited } from '@/lib/notifications';
 
 interface ImprovedListingCardProps {
   listing: Listing;
@@ -101,6 +102,11 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
         const docRef = await addDoc(collection(db, 'favorites'), favoriteData);
         setIsLiked(true);
         setFavoriteId(docRef.id);
+
+        // Notify listing owner that someone favorited their listing
+        if (listing.userId !== user.uid) {
+          await notifyListingFavorited(listing.userId, user.uid, listing.id);
+        }
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);

@@ -58,6 +58,20 @@ export interface Conversation {
   createdAt: Date;
 }
 
+export interface Notification {
+  id: string;
+  userId: string; // Recipient
+  type: 'message' | 'favorite' | 'purchase' | 'sold' | 'conversation' | 'listing_viewed';
+  title: string;
+  message: string;
+  read: boolean;
+  actionUrl?: string;
+  relatedId?: string; // ID of related listing, conversation, etc.
+  senderName?: string;
+  senderAvatar?: string;
+  createdAt: Date;
+}
+
 export interface Transaction {
   id: string;
   listingId: string;
