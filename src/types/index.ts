@@ -17,6 +17,9 @@ export interface User {
   totalSales?: number;
   canReceivePayments?: boolean;
   needsFullVerification?: boolean; // Triggers at $600
+  // Avatar
+  avatarUrl?: string;
+  avatarPath?: string; // Firebase Storage path for deletion
 }
 
 export interface Listing {

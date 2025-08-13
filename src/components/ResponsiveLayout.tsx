@@ -12,9 +12,12 @@ interface ResponsiveLayoutProps {
 
 export default function ResponsiveLayout({ children, showFilters = false, filterPanel }: ResponsiveLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
+  const toggleFilters = () => setFiltersOpen(!filtersOpen);
+  const closeFilters = () => setFiltersOpen(false);
 
   return (
     <div className="flex min-h-screen bg-gray-50">

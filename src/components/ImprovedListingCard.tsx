@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Listing, User } from '@/types';
 import { HeartIcon, ShareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { getListingPlaceholder } from '@/lib/placeholderImages';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
