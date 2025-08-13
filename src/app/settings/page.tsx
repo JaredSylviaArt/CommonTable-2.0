@@ -2,23 +2,69 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ResponsiveLayout from '@/components/ResponsiveLayout';
 import { UserCircleIcon, BellIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
     marketing: false,
   });
+  
+  // Profile form state
+  const [profileData, setProfileData] = useState({
+    name: user?.name || '',
+    churchName: user?.churchName || '',
+    churchRole: user?.churchRole || '',
+    zipCode: user?.zipCode || '',
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
 
   const handleNotificationChange = (type: string, value: boolean) => {
     setNotifications(prev => ({
       ...prev,
       [type]: value,
     }));
+  };
+
+  const handleProfileChange = (field: string, value: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+    setSaveMessage(''); // Clear any previous save message
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+
+    setIsSaving(true);
+    setSaveMessage('');
+
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        name: profileData.name,
+        churchName: profileData.churchName,
+        churchRole: profileData.churchRole,
+        zipCode: profileData.zipCode,
+        updatedAt: new Date(),
+      });
+
+      // Refresh user data
+      await refreshUser();
+      setSaveMessage('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setSaveMessage('Failed to update profile. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -44,9 +90,10 @@ export default function SettingsPage() {
                     </label>
                     <input
                       type="text"
-                      value={user?.name || ''}
-                      disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                      value={profileData.name}
+                      onChange={(e) => handleProfileChange('name', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-dark-force"
+                      style={{ color: '#111827' }}
                     />
                   </div>
                   
@@ -60,6 +107,7 @@ export default function SettingsPage() {
                       disabled
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
                     />
+                    <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
                   </div>
                   
                   <div>
@@ -68,9 +116,10 @@ export default function SettingsPage() {
                     </label>
                     <input
                       type="text"
-                      value={user?.churchName || ''}
-                      disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                      value={profileData.churchName}
+                      onChange={(e) => handleProfileChange('churchName', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-dark-force"
+                      style={{ color: '#111827' }}
                     />
                   </div>
                   
@@ -80,9 +129,10 @@ export default function SettingsPage() {
                     </label>
                     <input
                       type="text"
-                      value={user?.churchRole || ''}
-                      disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                      value={profileData.churchRole}
+                      onChange={(e) => handleProfileChange('churchRole', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-dark-force"
+                      style={{ color: '#111827' }}
                     />
                   </div>
                   
@@ -92,16 +142,31 @@ export default function SettingsPage() {
                     </label>
                     <input
                       type="text"
-                      value={user?.zipCode || ''}
-                      disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                      value={profileData.zipCode}
+                      onChange={(e) => handleProfileChange('zipCode', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-dark-force"
+                      style={{ color: '#111827' }}
                     />
                   </div>
                 </div>
                 
-                <p className="text-sm text-gray-500 mt-4">
-                  Contact support to update your profile information.
-                </p>
+                {/* Save Button and Status */}
+                <div className="mt-6 flex items-center justify-between">
+                  <div>
+                    {saveMessage && (
+                      <p className={`text-sm ${saveMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+                        {saveMessage}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isSaving ? 'Saving...' : 'Save Profile'}
+                  </button>
+                </div>
               </div>
 
               {/* Notifications */}

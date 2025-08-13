@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Listing, User } from '@/types';
-import { HeartIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { HeartIcon, ShareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +22,7 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
   const [listingOwner, setListingOwner] = useState<User | null>(null);
   const [loadingOwner, setLoadingOwner] = useState(false);
   const [favoriteId, setFavoriteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -175,7 +176,32 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
     }
   };
 
+  const handleDeleteListing = async () => {
+    if (!user || listing.userId !== user.uid) return;
+    
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${listing.title}"? This action cannot be undone.`
+    );
+    
+    if (!confirmDelete) return;
 
+    setIsDeleting(true);
+    try {
+      // Delete the listing document
+      await deleteDoc(doc(db, 'listings', listing.id));
+      
+      // Optionally, you could also delete related data like favorites, conversations, etc.
+      // For now, we'll just delete the listing
+      
+      // Refresh the page or notify parent component
+      window.location.reload(); // Simple solution, could be improved with state management
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      alert('Failed to delete listing. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 group">
@@ -215,20 +241,39 @@ export default function ImprovedListingCard({ listing, showUser = true }: Improv
 
           {/* Actions */}
           <div className="absolute top-3 right-3 flex space-x-2">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleFavorite();
-              }}
-              className="w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors"
-            >
-              {isLiked ? (
-                <HeartIconSolid className="w-4 h-4 text-red-500" />
-              ) : (
-                <HeartIcon className="w-4 h-4 text-gray-600" />
-              )}
-            </button>
+            {/* Delete button - only show for listing owner */}
+            {user && listing.userId === user.uid && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDeleteListing();
+                }}
+                disabled={isDeleting}
+                className="w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-red-50 transition-colors group"
+              >
+                <TrashIcon className={`w-4 h-4 ${isDeleting ? 'text-gray-400' : 'text-gray-600 group-hover:text-red-600'} transition-colors`} />
+              </button>
+            )}
+            
+            {/* Favorite button - only show for other users */}
+            {user && listing.userId !== user.uid && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFavorite();
+                }}
+                className="w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors"
+              >
+                {isLiked ? (
+                  <HeartIconSolid className="w-4 h-4 text-red-500" />
+                ) : (
+                  <HeartIcon className="w-4 h-4 text-gray-600" />
+                )}
+              </button>
+            )}
+            
             <button
               onClick={(e) => {
                 e.preventDefault();
