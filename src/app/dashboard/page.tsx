@@ -10,27 +10,19 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import ResponsiveLayout from '@/components/ResponsiveLayout';
 import ImprovedListingCard from '@/components/ImprovedListingCard';
 import ConversationList from '@/components/ConversationList';
-import AnalyticsInsights from '@/components/dashboard/AnalyticsInsights';
-import NotificationsAlerts from '@/components/dashboard/NotificationsAlerts';
 import FavoritesWatchlist from '@/components/dashboard/FavoritesWatchlist';
-import RecentActivity from '@/components/dashboard/RecentActivity';
 import AccountManagement from '@/components/dashboard/AccountManagement';
-import SellerOnboarding from '@/components/SellerOnboarding';
-import Breadcrumbs from '@/components/Breadcrumbs';
-import WelcomeHeader from '@/components/WelcomeHeader';
-import QuickStatsBar from '@/components/QuickStatsBar';
+import SimplifiedSellerOnboarding from '@/components/SimplifiedSellerOnboarding';
 import { 
   Squares2X2Icon, 
   ChatBubbleLeftRightIcon,
   ChartBarIcon,
-  BellIcon,
   HeartIcon,
-  ClockIcon,
   UserCircleIcon
 } from '@heroicons/react/24/outline';
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'inbox' | 'analytics' | 'notifications' | 'favorites' | 'activity' | 'account'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'inbox' | 'favorites' | 'account'>('overview');
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,36 +135,27 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <ResponsiveLayout>
-        {/* Breadcrumbs */}
-        <Breadcrumbs items={[{ label: 'Dashboard' }]} />
-
-        {/* Welcome Header */}
-        <WelcomeHeader userName={user?.name || 'Friend'} />
-
-        {/* Quick Stats Bar */}
-        <QuickStatsBar 
-          totalListings={analytics.totalListings}
-          totalViews={analytics.totalViews}
-          totalMessages={analytics.totalMessages}
-          totalShared={analytics.totalShared}
-        />
-
-        {/* Seller Onboarding */}
-        <div className="mb-8">
-          <SellerOnboarding />
+        {/* Simple Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600">Manage your listings and account</p>
         </div>
+
+        {/* Payment Setup - Only show if needed */}
+        {activeTab === 'account' && (
+          <div className="mb-6">
+            <SimplifiedSellerOnboarding />
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-2 sm:space-x-6 overflow-x-auto">
             {[
               { id: 'overview', label: 'Overview', icon: ChartBarIcon },
-              { id: 'listings', label: 'Listings', icon: Squares2X2Icon, count: myListings.length },
-              { id: 'inbox', label: 'Inbox', icon: ChatBubbleLeftRightIcon, count: conversations.length },
-              { id: 'analytics', label: 'Analytics', icon: ChartBarIcon },
-              { id: 'notifications', label: 'Alerts', icon: BellIcon },
-              { id: 'favorites', label: 'Saved', icon: HeartIcon },
-              { id: 'activity', label: 'Activity', icon: ClockIcon },
+              { id: 'listings', label: 'My Listings', icon: Squares2X2Icon, count: myListings.length },
+              { id: 'inbox', label: 'Messages', icon: ChatBubbleLeftRightIcon, count: conversations.length },
+              { id: 'favorites', label: 'Saved Items', icon: HeartIcon },
               { id: 'account', label: 'Account', icon: UserCircleIcon },
             ].map((tab) => (
               <button
@@ -204,10 +187,38 @@ export default function DashboardPage() {
         ) : (
           <>
             {activeTab === 'overview' && (
-              <div className="space-y-8">
-                <AnalyticsInsights />
-                <NotificationsAlerts />
-                <RecentActivity />
+              <div className="space-y-6">
+                {/* Simple Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-600">Listings</p>
+                    <p className="text-2xl font-semibold text-gray-900">{analytics.totalListings}</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-600">Messages</p>
+                    <p className="text-2xl font-semibold text-gray-900">{analytics.totalMessages}</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-600">Views</p>
+                    <p className="text-2xl font-semibold text-gray-900">{analytics.totalViews}</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-600">Shared</p>
+                    <p className="text-2xl font-semibold text-gray-900">{analytics.totalShared}</p>
+                  </div>
+                </div>
+                
+                {/* Recent Listings */}
+                {myListings.length > 0 && (
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Listings</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {myListings.slice(0, 3).map((listing) => (
+                        <ImprovedListingCard key={listing.id} listing={listing} showUser={false} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -247,10 +258,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {activeTab === 'analytics' && <AnalyticsInsights />}
-            {activeTab === 'notifications' && <NotificationsAlerts />}
             {activeTab === 'favorites' && <FavoritesWatchlist />}
-            {activeTab === 'activity' && <RecentActivity />}
             {activeTab === 'account' && <AccountManagement />}
           </>
         )}
