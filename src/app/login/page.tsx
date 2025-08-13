@@ -40,7 +40,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#E6FF02] via-[#E6FF02]/40 to-white flex">
+    <div className="min-h-screen bg-gradient-to-br from-[#E6FF02] to-white flex">
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#665CF0] text-white p-12 flex-col justify-center">
         <div className="max-w-md">
