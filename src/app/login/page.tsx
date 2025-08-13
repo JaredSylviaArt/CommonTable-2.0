@@ -42,7 +42,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#E6FF02]/20 to-white flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#E6FF02] to-[#B8CC02] text-black p-12 flex-col justify-center">
+      <div className="hidden lg:flex lg:w-1/2 bg-[#665CF0] text-white p-12 flex-col justify-center">
         <div className="max-w-md">
           <h1 className="text-4xl font-bold mb-6">CommonTable</h1>
           <p className="text-xl mb-8 opacity-90">
@@ -102,7 +102,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E6FF02] focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent"
                 placeholder="Enter your email"
               />
             </div>
@@ -117,7 +117,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E6FF02] focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:border-transparent"
                 placeholder="Enter your password"
               />
             </div>
@@ -125,7 +125,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#E6FF02] text-black py-2 px-4 rounded-lg font-medium hover:bg-[#B8CC02] focus:outline-none focus:ring-2 focus:ring-[#E6FF02] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#665CF0] text-white py-2 px-4 rounded-lg font-medium hover:bg-[#5A52E8] focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
@@ -144,7 +144,7 @@ export default function LoginPage() {
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="mt-4 w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#E6FF02] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-4 w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#665CF0] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Continue with Google
             </button>
@@ -152,7 +152,7 @@ export default function LoginPage() {
 
           <p className="mt-8 text-center text-sm text-gray-600">
             Don't have an account?{' '}
-            <Link href="/signup" className="font-medium text-[#E6FF02] hover:text-[#B8CC02]">
+            <Link href="/signup" className="font-medium text-[#665CF0] hover:text-[#5A52E8]">
               Sign up
             </Link>
           </p>
