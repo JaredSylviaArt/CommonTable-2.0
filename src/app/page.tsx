@@ -133,7 +133,6 @@ export default function Home() {
       }
     });
 
-    console.log(`Applied ${sortBy} sorting to ${sorted.length} listings`);
     setFilteredListings(sorted);
   };
 
